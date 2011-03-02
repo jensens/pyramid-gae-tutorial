@@ -1,0 +1,97 @@
+=======
+Sources
+=======
+
+Concepts
+--------
+
+Sources are designed with three concepts:
+
+- The source itself - an iterable
+
+  This can return any kind of object it wants. It doesn't have to care
+  for browser representation, encoding, ...
+
+- A way to map a value from the iterable to something that can be used
+  for form *values* - this is called a token. A token is commonly a
+  (unique) 7bit representation of the value.
+
+- A way to map a value to something that can be displayed to the user -
+  this is called a title
+
+The last two elements are dispatched using a so called `term`. The
+ITitledTokenizedTerm interface contains a triple of (value, token, title).
+
+Additionally there are some lookup functions to perform the mapping
+between values and terms and tokens and terms.
+
+Sources that require context use a special factory: a context source
+binder that is called with the context and instanciates the source when
+it is actually used.
+
+Sources in Fields
+-----------------
+
+A choice field can be constructed with a source or source name.  When a source
+is used, it will be used as the source for valid values.
+
+Create a source for all odd numbers.
+
+    >>> from zope import interface
+    >>> from zope.schema.interfaces import ISource, IContextSourceBinder
+    >>> class MySource(object):
+    ...     interface.implements(ISource)
+    ...     divisor = 2
+    ...     def __contains__(self, value):
+    ...         return bool(value % self.divisor)
+    >>> my_source = MySource()
+    >>> 1 in my_source
+    True
+    >>> 2 in my_source
+    False
+
+    >>> from zope.schema import Choice
+    >>> choice = Choice(__name__='number', source=my_source)
+    >>> bound = choice.bind(object())
+    >>> bound.vocabulary
+    <...MySource...>
+
+If a IContextSourceBinder is passed as the `source` argument to Choice, it's
+`bind` method will be called with the context as its only argument.   The
+result must implement ISource and will be used as the source.
+
+    >>> def my_binder(context):
+    ...     print "Binder was called."
+    ...     source = MySource()
+    ...     source.divisor = context.divisor
+    ...     return source
+    >>> interface.directlyProvides(my_binder, IContextSourceBinder)
+
+    >>> class Context(object):
+    ...     divisor = 3
+
+    >>> choice = Choice(__name__='number', source=my_binder)
+    >>> bound = choice.bind(Context())
+    Binder was called.
+    >>> bound.vocabulary
+    <...MySource...>
+    >>> bound.vocabulary.divisor
+    3
+
+When using IContextSourceBinder together with default value, it's
+impossible to validate it on field initialization. Let's check if
+initalization doesn't fail in that case.
+
+    >>> choice = Choice(__name__='number', source=my_binder, default=2)
+
+    >>> bound = choice.bind(Context())
+    Binder was called.
+
+    >>> bound.validate(bound.default)
+    >>> bound.validate(3)
+    Traceback (most recent call last):
+    ...
+    ConstraintNotSatisfied: 3
+
+It's developer's responsibility to provide a default value that fits the
+constraints when using context-based sources.

@@ -1,0 +1,165 @@
+=================
+Schema Validation
+=================
+
+There are two helper methods to verify schemas and interfaces:
+
+getValidationErrors
+    first validates via the zope.schema field validators. If that succeeds the
+    invariants are checked.
+getSchemaValidationErrors
+    *only* validateds via the zope.schema field validators. The invariants are
+    *not* checked.
+
+
+Create an interface to validate against:
+
+  >>> import zope.interface
+  >>> import zope.schema
+  >>> class ITwoInts(zope.interface.Interface):
+  ...     a = zope.schema.Int(max=10)
+  ...     b = zope.schema.Int(min=5)
+  ...
+  ...     @zope.interface.invariant
+  ...     def a_greater_b(obj):
+  ...         print "Checking if a > b"
+  ...         if obj.a <= obj.b:
+  ...             raise zope.interface.Invalid("%s<=%s" % (obj.a, obj.b))
+  ...     
+
+Create a silly model:
+
+  >>> class TwoInts(object):
+  ...     pass
+
+Create an instance of TwoInts but do not set attributes. We get two errors:
+
+  >>> ti = TwoInts()
+  >>> r = zope.schema.getValidationErrors(ITwoInts, ti)
+  >>> r.sort()
+  >>> r
+  [('a', SchemaNotFullyImplemented(...AttributeError...)),
+   ('b', SchemaNotFullyImplemented(...AttributeError...))]
+  >>> r[0][1].args[0].args
+  ("'TwoInts' object has no attribute 'a'",)
+  >>> r[1][1].args[0].args
+  ("'TwoInts' object has no attribute 'b'",)
+
+The `getSchemaValidationErrors` function returns the same result:
+
+  >>> r = zope.schema.getSchemaValidationErrors(ITwoInts, ti)
+  >>> r.sort()
+  >>> r
+  [('a', SchemaNotFullyImplemented(...AttributeError...)),
+   ('b', SchemaNotFullyImplemented(...AttributeError...))]
+  >>> r[0][1].args[0].args
+  ("'TwoInts' object has no attribute 'a'",)
+  >>> r[1][1].args[0].args
+  ("'TwoInts' object has no attribute 'b'",)
+ 
+Note that see no error from the invariant because the invariants are not
+vaildated if there are other schema errors.
+
+When we set a valid value for `a` we still get the same error for `b`:
+
+  >>> ti.a = 11
+  >>> errors = zope.schema.getValidationErrors(ITwoInts, ti)
+  >>> errors.sort()
+  >>> errors
+  [('a', TooBig(11, 10)),
+   ('b', SchemaNotFullyImplemented(...AttributeError...))]
+  >>> errors[1][1].args[0].args
+  ("'TwoInts' object has no attribute 'b'",)
+
+  >>> errors[0][1].doc()
+  u'Value is too big'
+
+
+After setting a valid value for `a` there is only the error for the missing `b`
+left:
+
+  >>> ti.a = 8
+  >>> r = zope.schema.getValidationErrors(ITwoInts, ti)
+  >>> r
+  [('b', SchemaNotFullyImplemented(...AttributeError...))]
+  >>> r[0][1].args[0].args
+  ("'TwoInts' object has no attribute 'b'",)
+
+
+After setting valid value for `b` the schema is valid so the invariants are
+checked. As `b>a` the invariant fails:
+
+  >>> ti.b = 10
+  >>> errors = zope.schema.getValidationErrors(ITwoInts, ti)
+  Checking if a > b
+  >>> errors
+  [(None, <zope.interface.exceptions.Invalid instance at 0x...>)]
+
+
+When using `getSchemaValidationErrors` we do not get an error any more:
+
+  >>> zope.schema.getSchemaValidationErrors(ITwoInts, ti)
+  []
+
+
+Set `b=5` so everything is fine:
+
+  >>> ti.b = 5
+  >>> zope.schema.getValidationErrors(ITwoInts, ti)
+  Checking if a > b
+  []
+
+
+Compare ValidationError
+-----------------------
+
+There was an issue with compare validation error with somthing else then an
+exceptions. Let's test if we can compare ValidationErrors with different things
+
+  >>> from zope.schema._bootstrapinterfaces import ValidationError
+  >>> v1 = ValidationError('one')
+  >>> v2 = ValidationError('one')
+  >>> v3 = ValidationError('another one')
+
+A ValidationError with the same arguments compares:
+
+  >>> v1 == v2
+  True
+
+but not with an error with different arguments:
+
+  >>> v1 == v3
+  False
+
+We can also compare validation erros with other things then errors. This 
+was running into an AttributeError in previous versions of zope.schema. e.g.
+AttributeError: 'NoneType' object has no attribute 'args'
+
+  >>> v1 == None
+  False
+
+  >>> v1 == object()
+  False
+
+  >>> v1 == False
+  False
+
+  >>> v1 == True
+  False
+
+  >>> v1 == 0
+  False
+
+  >>> v1 == 1
+  False
+
+  >>> v1 == int
+  False
+
+If we compare a ValidationError with another validation error based class,
+we will get the following result:
+
+  >>> from zope.schema._bootstrapinterfaces import RequiredMissing
+  >>> r1 = RequiredMissing('one')
+  >>> v1 == r1
+  True

@@ -1,0 +1,157 @@
+======
+Fields
+======
+
+This document highlights unusual and subtle aspects of various fields and
+field classes, and is not intended to be a general introduction to schema
+fields.  Please see README.txt for a more general introduction.
+
+While many field types, such as Int, TextLine, Text, and Bool are relatively
+straightforward, a few have some subtlety.  We will explore the general
+class of collections and discuss how to create a custom creation field; discuss
+Choice fields, vocabularies, and their use with collections; and close with a
+look at the standard zope.app approach to using these fields to find views
+("widgets").
+
+Collections
+-----------
+
+Normal fields typically describe the API of the attribute -- does it behave as a
+Python Int, or a Float, or a Bool -- and various constraints to the model, such
+as a maximum or minimum value.  Collection fields have additional requirements
+because they contain other types, which may also be described and constrained.
+
+For instance, imagine a list that contains non-negative floats and enforces
+uniqueness. In a schema, this might be written as follows:
+
+  >>> from zope.interface import Interface
+  >>> from zope.schema import List, Float
+  >>> class IInventoryItem(Interface):
+  ...     pricePoints = List(
+  ...         title=u"Price Points",
+  ...         unique=True,
+  ...         value_type=Float(title=u"Price", min=0.0)
+  ...     )
+
+This indicates several things.
+
+- pricePoints is an attribute of objects that implement IInventoryItem.
+- The contents of pricePoints can be accessed and manipulated via a Python list
+  API.
+- Each member of pricePoints must be a non-negative float.
+- Members cannot be duplicated within pricePoints: each must be must be unique.
+- The attribute and its contents have descriptive titles.  Typically these
+  would be message ids.
+
+This declaration creates a field that implements a number of interfaces, among
+them these:
+
+  >>> from zope.schema.interfaces import IList, ISequence, ICollection
+  >>> IList.providedBy(IInventoryItem['pricePoints'])
+  True
+  >>> ISequence.providedBy(IInventoryItem['pricePoints'])
+  True
+  >>> ICollection.providedBy(IInventoryItem['pricePoints'])
+  True
+
+Creating a custom collection field
+----------------------------------
+
+Ideally, custom collection fields have interfaces that inherit appropriately
+from either zope.schema.interfaces.ISequence or
+zope.schema.interfaces.IUnorderedCollection.  Most collection fields should be
+able to subclass zope.schema._field.AbstractCollection to get the necessary
+behavior.  Notice the behavior of the Set field in zope.schema._field: this
+would also be necessary to implement a Bag.
+
+Choices and Vocabularies
+------------------------
+
+Choice fields are the schema way of spelling enumerated fields and more.  By
+providing a dynamically generated vocabulary, the choices available to a
+choice field can be contextually calculated.  
+
+Simple choices do not have to explicitly use vocabularies:
+
+  >>> from zope.schema import Choice
+  >>> f = Choice((640, 1028, 1600))
+  >>> f.validate(640)
+  >>> f.validate(960)
+  Traceback (most recent call last):
+  ...
+  ConstraintNotSatisfied: 960
+  >>> f.validate('bing')
+  Traceback (most recent call last):
+  ...
+  ConstraintNotSatisfied: bing
+
+More complex choices will want to use registered vocabularies.  Vocabularies
+have a simple interface, as defined in
+zope.schema.interfaces.IBaseVocabulary.  A vocabulary must minimally be able
+to determine whether it contains a value, to create a term object for a value,
+and to return a query interface (or None) to find items in itself.  Term
+objects are an abstraction that wraps a vocabulary value.  
+
+The Zope application server typically needs a fuller interface that provides
+"tokens" on its terms: ASCII values that have a one-to-one relationship to the
+values when the vocabulary is asked to "getTermByToken".  If a vocabulary is
+small, it can also support the IIterableVocabulary interface.
+
+If a vocabulary has been registered, then the choice merely needs to pass the
+vocabulary identifier to the "vocabulary" argument of the choice during
+instantiation.
+
+A start to a vocabulary implementation that may do all you need for many simple
+tasks may be found in zope.schema.vocabulary.SimpleVocabulary.  Because
+registered vocabularies are simply callables passed a context, many
+registered vocabularies can simply be functions that rely on SimpleVocabulary:
+
+  >>> from zope.schema.vocabulary import SimpleVocabulary
+  >>> def myDynamicVocabulary(context):
+  ...     v = dynamic_context_calculation_that_returns_an_iterable(context)
+  ...     return SimpleVocabulary.fromValues(v)
+  ... 
+
+The vocabulary interface is simple enough that writing a custom vocabulary is
+not too difficult itself.
+
+Choices and Collections
+-----------------------
+
+Choices are a field type and can be used as a value_type for collections.  Just
+as a collection of an "Int" value_type constrains members to integers, so a
+choice-based value type constrains members to choices within the Choice's
+vocabulary.  Typically in the Zope application server widgets are found not
+only for the collection and the choice field but also for the vocabulary on
+which the choice is based.
+
+Using Choice and Collection Fields within a Widget Framework
+------------------------------------------------------------
+
+While fields support several use cases, including code documentation and data
+description and even casting, a significant use case influencing their design is
+to support form generation -- generating widgets for a field.  Choice and
+collection fields are expected to be used within widget frameworks.  The
+zope.app approach typically (but configurably) uses multiple dispatches to 
+find widgets on the basis of various aspects of the fields.
+
+Widgets for all fields are found by looking up a browser view of the field
+providing an input or display widget view.  Typically there is only a single
+"widget" registered for Choice fields.  When it is looked up, it performs
+another dispatch -- another lookup -- for a widget registered for both the field
+and the vocabulary.  This widget typically has enough information to render
+without a third dispatch.
+
+Collection fields may fire several dispatches.  The first is the usual lookup
+by field.  A single "widget" should be registered for ICollection, which does
+a second lookup by field and value_type constraint, if any, or, theoretically,
+if value_type is None, renders some absolutely generic collection widget that
+allows input of any value imaginable: a check-in of such a widget would be
+unexpected.  This second lookup may find a widget that knows how to render,
+and stop.  However, the value_type may be a choice, which will usually fire a
+third dispatch: a search for a browser widget for the collection field, the
+value_type field, and the vocabulary.  Further lookups may even be configured
+on the basis of uniqueness and other constraints.
+
+This level of indirection may be unnecessary for some applications, and can be
+disabled with simple ZCML changes within `zope.app`.
