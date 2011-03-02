@@ -1,0 +1,5 @@
+reload_templates: false
+debug_authorization: false
+debug_notfound: false
+debug_templates: false
+default_locale_name: en 
