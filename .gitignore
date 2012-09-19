@@ -18,4 +18,5 @@ var
 devsrc
 docs/Makefile
 docs/make.bat
-dist
+/dist/
+/app/lib/

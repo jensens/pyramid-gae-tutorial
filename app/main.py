@@ -6,7 +6,7 @@ import sys,os
 
 sys.path.insert(0,'lib/dist')
 
-from pyramid.configuration import Configurator
+from pyramid.config import Configurator
 from models import get_root
 from google.appengine.ext.webapp.util import run_wsgi_app
 
