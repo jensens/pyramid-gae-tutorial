@@ -1,5 +1,5 @@
 application: pyramid-gae-tutorial
-version: 0-0-1
+version: 0-0-2
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -8,6 +8,12 @@ default_expiration: "4d 5h"
 
 derived_file_type:
 - python_precompiled
+
+libraries:
+- name: PIL
+  version: "1.1.7"
+- name: webob
+  version: latest
 
 skip_files:
 - ^(.*/)?app\.yaml
@@ -23,6 +29,8 @@ skip_files:
 - ^modeling/.*
 - ^sample_data/.*
 - ^(.*/)?.*/.svn/.*
+- ^(.*/)?.*/.git/.*
+- ^(.*/)?.*/.gitignore
 
 
 error_handlers:
@@ -36,22 +44,10 @@ handlers:
   upload: static/favicon.ico
   expiration: "30d"
 
-
 - url: /static
   static_dir: static
   expiration: "30d"
 
-
-
-- url: /admin/.*
-  script: google.appengine.ext.admin.application
-  login: admin
-
-- url: /remote_api
-  script: google.appengine.ext..remote_api.handler.application
-  login: admin
-
 - url: .*
   script: main.application
   
-
