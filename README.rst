@@ -9,7 +9,7 @@ The `zc.buildout <http://pypi.python.org/pypi/zc.buildout>`_ based installation
 uses the `great appengine buildout integration appfy.recipe.gae <http://pypi.python.org/pypi/appfy.recipe.gae/>`_.
 
 This minimal example was a based on
-`some older pyramid on appengine tutorial <http://code.google.com/p/bfg-pages/wiki/PyramidTutorial>`
+`some older pyramid on appengine tutorial <http://code.google.com/p/bfg-pages/wiki/PyramidTutorial>`_
 and was developed further, because I had some issues to get it running. I
 cleaned it slightly up, such as moving the app to the app subdir and now it
 just works.
