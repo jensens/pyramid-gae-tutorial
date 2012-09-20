@@ -6,12 +6,13 @@ A minimal Pyramid application running in a local appengine development
 environment.
 
 The `zc.buildout <http://pypi.python.org/pypi/zc.buildout>`_ based installation
-is based on the `great appengine buildout integration appfy.recipe.gae <http://pypi.python.org/pypi/appfy.recipe.gae/>`_.
+uses the `great appengine buildout integration appfy.recipe.gae <http://pypi.python.org/pypi/appfy.recipe.gae/>`_.
 
-This minimal example was a based on `some older pyramid on appengine
-tutorial <http://code.google.com/p/bfg-pages/wiki/PyramidTutorial>` and
-developed further since I had some issues to get it running I cleaned it
-slightly up, such as moving the app to the app subdir and now it just works.
+This minimal example was a based on
+`some older pyramid on appengine tutorial <http://code.google.com/p/bfg-pages/wiki/PyramidTutorial>`
+and was developed further, because I had some issues to get it running. I
+cleaned it slightly up, such as moving the app to the app subdir and now it
+just works.
 
 Usage
 =====
