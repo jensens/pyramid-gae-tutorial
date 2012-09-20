@@ -1,3 +1,5 @@
+# this file was copied from distribute 0.6.28
+
 """Package resource API
 --------------------
 
