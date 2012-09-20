@@ -1,7 +1,8 @@
 application: pyramid-gae-tutorial
 version: 0-0-1
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: true
 
 default_expiration: "4d 5h"
 
@@ -43,15 +44,14 @@ handlers:
 
 
 - url: /admin/.*
-  script: $PYTHON_LIB/google/appengine/ext/admin
+  script: google.appengine.ext.admin.application
   login: admin
 
 - url: /remote_api
-  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  script: google.appengine.ext..remote_api.handler.application
   login: admin
 
-
 - url: .*
-  script: main.py
+  script: main.application
   
 

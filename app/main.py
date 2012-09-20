@@ -2,13 +2,17 @@ import logging
 
 logging.getLogger().setLevel(logging.INFO)
 
-import sys,os
+import sys, os
 
-sys.path.insert(0,'lib/dist')
+sys.path.insert(0, 'lib/dist')
+
+# register gae loader
+from google.appengine.tools.dev_appserver_import_hook import HardenedModulesHook
+from pkg_resources import register_loader_type, DefaultProvider
+register_loader_type(HardenedModulesHook, DefaultProvider)
 
 from pyramid.config import Configurator
 from models import get_root
-from google.appengine.ext.webapp.util import run_wsgi_app
 
 settings = {
     'reload_templates': 'false',
@@ -18,16 +22,9 @@ settings = {
     'default_locale_name': 'en',
 }
 
-def main():
-    """ This function runs a Pyramid WSGI application.
-    """
-    
-    config = Configurator(root_factory=get_root,settings=settings)
-    config.add_view('views.my_view',
-                    context='models.MyModel',
-                    renderer='templates/mytemplate.pt')
-    app= config.make_wsgi_app()
-    run_wsgi_app(app)
-            
-if __name__ == '__main__':
-  main() 
+
+config = Configurator(root_factory=get_root, settings=settings)
+config.add_view('views.my_view',
+                context='models.MyModel',
+                renderer='templates/mytemplate.pt')
+application = config.make_wsgi_app()
