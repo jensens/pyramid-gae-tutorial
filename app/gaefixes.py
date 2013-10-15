@@ -5,8 +5,9 @@ sys.path.insert(0, 'distlib')
 
 # register gae loader for pkg_resources
 if os.environ.get('SERVER_SOFTWARE', 'Development')[0:11] == "Development":
-    from google.appengine.tools.dev_appserver_import_hook import \
+    from google.appengine.tools.dev_appserver_import_hook import (
         HardenedModulesHook
+    )
     from pkg_resources import register_loader_type, DefaultProvider
     register_loader_type(HardenedModulesHook, DefaultProvider)
 

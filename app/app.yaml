@@ -1,5 +1,5 @@
-application: pyramid-gae-tutorial
-version: 0-0-2
+application: example
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -14,7 +14,11 @@ libraries:
   version: "1.1.7"
 - name: webob
   version: latest
-
+- name: pycrypto
+  version: latest                                                               
+- name: markupsafe                                                              
+  version: latest
+  
 skip_files:
 - ^(.*/)?app\.yaml
 - ^(.*/)?app\.yml
@@ -25,19 +29,22 @@ skip_files:
 - ^(.*/)?.*\.py[co]
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
-- ^(.*/)?.*/tests/.*
-- ^modeling/.*
-- ^sample_data/.*
+- ^(.*/)?.*/tests.*
+- ^distlib/pyramid/scaffolds.*
 - ^(.*/)?.*/.svn/.*
 - ^(.*/)?.*/.git/.*
 - ^(.*/)?.*/.gitignore
-
+- ^Crypto/*
+- ^(.*/)?.*\.less
+- ^(.*/)?.*\.mustache
+- ^(.*/)?.*\.md
+- ^(.*/)?.*\.rst
+- ^.*LICENSE.*
 
 error_handlers:
   - file: default_error.html
 
 handlers:
-
 
 - url: /favicon.ico
   static_files: static/favicon.ico
@@ -49,5 +56,4 @@ handlers:
   expiration: "30d"
 
 - url: .*
-  script: main.application
-  
+  script: main.application  
