@@ -29,8 +29,9 @@
 		<div id="bottom">
 			<div class="bottom">
 				<div id="left" class="align-right">
-					<h3>Pyramid on Google Appengine Example</h3>
-                    <p>code of this can be found on Github</p>
+					<h3>Pyramid on Google Appengine</h3>
+                    <p>code of this <a href="http://github.com/jensens/pyramid-gae-tutorial">
+                       example_app can be found on Github</a></p>
 				</div>
 				<div id="right" class="align-left">
 					<h3>Pyramid links</h3>
@@ -68,7 +69,7 @@
 		</div>
 	</div>
 	<div id="footer">
-		<div class="footer">© Copyright 2008-2010, Agendaless Consulting.</div>
+		<div class="footer">example_app is under a BSD License and copyright 2011-2013, Klein &amp; Partner KG, Austria.</div>
 	</div>
 </body>
 </html>

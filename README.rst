@@ -2,13 +2,13 @@
 Pyramid on Google’s App Engine (the easy way using buildout)
 ============================================================
 
-A minimal Pyramid application running in a local appengine development
+A example Pyramid application running in a local appengine development
 environment.
 
 The `zc.buildout <http://pypi.python.org/pypi/zc.buildout>`_ based installation
 uses the `great appengine buildout integration appfy.recipe.gae <http://pypi.python.org/pypi/appfy.recipe.gae/>`_.
 
-This minimal example was a based on
+This example was a based on
 `some older pyramid on appengine tutorial <http://code.google.com/p/bfg-pages/wiki/PyramidTutorial>`_
 and was developed further, because I had some issues to get it running. I
 cleaned it slightly up, such as moving the app to the app subdir and now it
@@ -21,11 +21,23 @@ Follow the white rabbit::
 
     git clone git://github.com/jensens/pyramid-gae-tutorial.git
     cd pyramid-gae-tutorial
-    /path/to/python2.7 bootstrap.py
+    /path/to/virtualenv-2.7 --no-setuptools --no-site-packages --clear .
+    ./bin/python2.7 bootstrap.py
     ./bin/buildout
-    ./bin/dev_appserver app
 
-And in your browser just point to ``http://localhost:8080``.
+Run tests::
+
+    ./bin/testpy -m example_app
+
+Run apps local development server::
+
+    ./bin/dev_appserver 
+del(key=Key('TreeModel', 'ROOT'), body=u'Initial Root Node', title=u'Root')    
+
+
+And in your browser just point to ``http://localhost:8080``. For 
+admin-interface go to ``http://localhost:9000``.
+
 
 Additional information
 ======================
