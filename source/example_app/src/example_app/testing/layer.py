@@ -29,6 +29,7 @@ class AppengineLayer(Layer):
     def testSetUp(self):
         self.testbed.activate()
         self.testbed.setup_env(overwrite=True, app_id='testing-server')
+
         # Create a consistency policy that will simulate the High Replication
         # consistency model.
         policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
@@ -40,6 +41,7 @@ class AppengineLayer(Layer):
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
         self.testbed.init_app_identity_stub()
+
         # make the global zca registry and the pyramid threadlocal registry the same.
         # The registry will still be empty since we do not load the
         # pyramid config in this layer.
