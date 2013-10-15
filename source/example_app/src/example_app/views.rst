@@ -49,10 +49,6 @@ A 404 is expected for non existent nodes/pages::
     >>> response.status
     '404 Not Found'
     
-    
-
-
-
 
 Example for interlude
 =====================
