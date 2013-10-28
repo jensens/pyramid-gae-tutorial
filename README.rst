@@ -16,6 +16,10 @@ just works.
 Usage
 -----
 
+Preconditions:
+
+- virtual-env >= 1.9
+
 Follow the white rabbit::
 
     git clone git://github.com/jensens/pyramid-gae-tutorial.git
